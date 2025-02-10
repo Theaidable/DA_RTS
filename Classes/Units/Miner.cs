@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace DA_RTS.Classes.Units
 {
-    public class Miner : Unit
+    class Miner : Unit
     {
         private static Mutex _mutex = new Mutex();
         private static int goldInBank = 0;
