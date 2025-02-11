@@ -14,6 +14,9 @@ namespace DA_RTS.Classes
         private SpriteBatch _spriteBatch;
         private List<Miner> miners = new List<Miner>();
         private Texture2D backgroundTexture;
+        private Texture2D mineTexture, baseTexture;
+        private Vector2 minePosition = new Vector2(410, 70);
+        private Vector2 basePosition = new Vector2(110, 325);
 
         public GameWorld()
         {
@@ -36,7 +39,9 @@ namespace DA_RTS.Classes
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             backgroundTexture = Content.Load<Texture2D>("Assets/TinySwords/Background");
-            
+            mineTexture = Content.Load<Texture2D>("Assets/TinySwords/Resources/Gold Mine/GoldMine_Inactive");
+            baseTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Buildings/Castle/Castle_Blue");
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -54,6 +59,8 @@ namespace DA_RTS.Classes
 
             _spriteBatch.Begin();
             _spriteBatch.Draw(backgroundTexture, Vector2.Zero, Color.White);
+            _spriteBatch.Draw(mineTexture, minePosition, Color.White);
+            _spriteBatch.Draw(baseTexture, basePosition, Color.White);
             _spriteBatch.End();
 
             base.Draw(gameTime);
