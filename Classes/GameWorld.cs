@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
 using System.Threading;
-using SharpDX.Direct2D1.Effects;
 using DA_RTS.Classes.Units;
 
 namespace DA_RTS.Classes
@@ -14,10 +13,15 @@ namespace DA_RTS.Classes
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private List<Miner> miners = new List<Miner>();
+        private Texture2D backgroundTexture;
 
         public GameWorld()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            _graphics = new GraphicsDeviceManager(this)
+            {
+                PreferredBackBufferWidth = 1200,
+                PreferredBackBufferHeight = 900
+            };
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
@@ -31,6 +35,7 @@ namespace DA_RTS.Classes
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            backgroundTexture = Content.Load<Texture2D>("Assets/TinySwords/Background");
             
         }
 
@@ -46,6 +51,10 @@ namespace DA_RTS.Classes
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(backgroundTexture, Vector2.Zero, Color.White);
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
