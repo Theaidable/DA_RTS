@@ -1,59 +1,106 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DA_RTS.Classes.Units;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
+using SharpDX.Direct3D9;
 using System;
-using System.Threading;
-using SharpDX.Direct2D1.Effects;
-using DA_RTS.Classes.Units;
 
 namespace DA_RTS.Classes.Units
 {
-    class Miner : Unit
+    public class Miner : Unit
     {
-        private static Mutex _mutex = new Mutex();
-        private static int goldInBank = 0;
-        private static int minerCount = 0;
-        private bool running = true;
-        private Thread minerThread;
+        private int frameWidth;
+        private int frameHeight;
+        private int currentFrame;
+        private int totalFrames;
+        private int totalRows;
+        private float timePerFrame;
+        private float elapsedTime;
 
-        public Miner()
+        private enum MinerState { MovingToMine, Mining, Returning }
+        private MinerState currentState;
+
+        private Vector2 targetMinePosition;
+        private Vector2 townHallPosition;
+
+        private int goldCarried;
+        private int goldCapacity;
+
+        public event EventHandler<int> GoldDelivered;
+
+        public Miner(Vector2 startPosition, Texture2D texture, float speed, Vector2 targetMine, Vector2 townHall) : base(startPosition, texture, speed)
         {
-            minerThread = new Thread(MineGold);
-            minerThread.Start();
+            targetMinePosition = targetMine;
+            townHallPosition = townHall;
+
+            currentState = MinerState.MovingToMine;
+
+            goldCarried = 0;
+            goldCapacity = 50;
+
+            totalFrames = 6;
+            totalRows = 6;
+            currentFrame = 0;
+            elapsedTime = 0f;
+            timePerFrame = 0.2f;
+
+            frameWidth = texture.Width / totalFrames;
+            frameHeight = texture.Height / totalRows;
         }
 
-
-        private void MineGold()
+        public override void Update(GameTime gameTime)
         {
-            while (running)
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            elapsedTime += deltaTime;
+            if (elapsedTime > timePerFrame)
             {
-                Thread.Sleep(2000);
+                currentFrame = (currentFrame + 1) % totalFrames;
+                elapsedTime -= timePerFrame;
+            }
 
-                _mutex.WaitOne();
-                try
-                {
-                    goldInBank += 10;
-                    Console.WriteLine($"Miner {Thread.CurrentThread.ManagedThreadId} mined 10 gold. Total: {goldInBank}");
-
-                    if (goldInBank >= 50)
+            switch (currentState)
+            {
+                case MinerState.MovingToMine:
+                    MoveTowards(targetMinePosition, deltaTime);
+                    if (Vector2.Distance(Position, targetMinePosition) < 5f)
                     {
-                        goldInBank -= 50;
-                        new Miner();
-                        Console.WriteLine("New miner spawned!");
+                        currentState = MinerState.Mining;
                     }
-                }
-                finally
-                {
-                    _mutex.ReleaseMutex();
-                }
+                    break;
+                case MinerState.Mining:
+                    goldCarried = goldCapacity;
+                    currentState = MinerState.Returning;
+                    break;
+                case MinerState.Returning:
+                    Vector2 offset = new Vector2(75, 0);
+                    Vector2 modifiedTownHallPosition = townHallPosition + offset;
+                    MoveTowards(modifiedTownHallPosition, deltaTime);
+                    if (Vector2.Distance(Position, modifiedTownHallPosition) < 5f)
+                    {
+                        GoldDelivered?.Invoke(this, goldCarried);
+                        goldCarried = 0;
+                        currentState = MinerState.MovingToMine;
+                    }
+                    break;
             }
         }
 
-        public void Stop()
+        private void MoveTowards(Vector2 target, float deltaTime)
         {
-            running = false;
-            minerThread.Join();
+            Vector2 direction = target - Position;
+            if (direction != Vector2.Zero)
+            {
+                direction.Normalize();
+                Position += direction * speed * deltaTime;
+            }
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, float layerDepth)
+        {
+            int animationRow = 1;
+
+            Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, animationRow * frameHeight, frameWidth, frameHeight);
+            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, layerDepth);
         }
     }
 }
