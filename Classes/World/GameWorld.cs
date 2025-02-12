@@ -179,7 +179,7 @@ namespace DA_RTS.Classes.World
             {
                 gold -= 200;
                 // Juster spawn-position for at lave en række
-                Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width + 20, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
+                Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width - 250, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
                 Soldier newSoldier = new Soldier(offset, soldierIcon, 100f, redTownHall.Position + new Vector2(-50, redCastleTexture.Height / 2));
                 newSoldier.DamageDealt += Soldier_DamageDealt;
                 soldiers.Add(newSoldier);
