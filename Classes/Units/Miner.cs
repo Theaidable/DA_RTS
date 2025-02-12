@@ -1,119 +1,106 @@
-﻿using DA_RTS.Classes.Castle;
-using DA_RTS.Classes.Player;
+﻿using DA_RTS.Classes.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX.Direct3D9;
 using System;
 
-namespace DA_RTS.Classes.Units
+namespace Test.Classes.Units
 {
     public class Miner : Unit
     {
-        private int goldMined;                   // Aktuel mængde guld
-        private readonly int goldCapacity = 50;    // Maksimal kapacitet
+        private int frameWidth;
+        private int frameHeight;
+        private int currentFrame;
+        private int totalFrames;
+        private int totalRows;
+        private float timePerFrame;
+        private float elapsedTime;
 
-        // Positioner for mine og base – disse skal sættes, når du initialiserer en Miner
-        private Vector2 minePosition;
-        private Vector2 basePosition;
+        private enum MinerState { MovingToMine, Mining, Returning }
+        private MinerState currentState;
 
-        // Timer til mining-logik
-        private float miningTimer = 0f;
-        private readonly float miningInterval = 1.0f; // F.eks. miner 10 guld pr. sekund
+        private Vector2 targetMinePosition;
+        private Vector2 townHallPosition;
 
-        // Reference til TownHall, hvor guldet skal afleveres
-        private TownHall townHall;
+        private int goldCarried;
+        private int goldCapacity;
 
-        // Definer en threshold for, hvornår vi anser en destination for "nået"
-        private const float ArrivalThreshold = 5f;
+        public event EventHandler<int> GoldDelivered;
 
-        // Simpel state-machine
-        private enum MinerState { MovingToMine, Mining, ReturningToBase }
-        private MinerState state;
-
-        /// <summary>
-        /// Constructor for Miner.
-        /// </summary>
-        /// <param name="startPosition">Startposition for mineren</param>
-        /// <param name="moveSpeed">Bevægelseshastighed</param>
-        /// <param name="health">Liv</param>
-        /// <param name="minePosition">Positionen for minen</param>
-        /// <param name="basePosition">Positionen for basen</param>
-        /// <param name="townHall">Reference til TownHall for at aflevere guld</param>
-        public Miner(Vector2 startPosition, float moveSpeed, int health, Vector2 minePosition, Vector2 basePosition, TownHall townHall)
-            : base(startPosition, moveSpeed, health)
+        public Miner(Vector2 startPosition, Texture2D texture, float speed, Vector2 targetMine, Vector2 townHall) : base(startPosition, texture, speed)
         {
-            this.minePosition = minePosition;
-            this.basePosition = basePosition;
-            this.townHall = townHall;
-            state = MinerState.MovingToMine;
-            goldMined = 0;
+            targetMinePosition = targetMine;
+            townHallPosition = townHall;
+
+            currentState = MinerState.MovingToMine;
+
+            goldCarried = 0;
+            goldCapacity = 50;
+
+            totalFrames = 6;
+            totalRows = 6;
+            currentFrame = 0;
+            elapsedTime = 0f;
+            timePerFrame = 0.2f;
+
+            frameWidth = texture.Width / totalFrames;
+            frameHeight = texture.Height / totalRows;
         }
 
         public override void Update(GameTime gameTime)
         {
-            float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            switch (state)
+            elapsedTime += deltaTime;
+            if (elapsedTime > timePerFrame)
+            {
+                currentFrame = (currentFrame + 1) % totalFrames;
+                elapsedTime -= timePerFrame;
+            }
+
+            switch (currentState)
             {
                 case MinerState.MovingToMine:
-                    MoveTowards(minePosition, elapsed);
-                    if (Vector2.Distance(Position, minePosition) < ArrivalThreshold)
+                    MoveTowards(targetMinePosition, deltaTime);
+                    if (Vector2.Distance(Position, targetMinePosition) < 5f)
                     {
-                        state = MinerState.Mining;
-                        miningTimer = 0f;
+                        currentState = MinerState.Mining;
                     }
                     break;
-
                 case MinerState.Mining:
-                    miningTimer += elapsed;
-                    if (miningTimer >= miningInterval)
-                    {
-                        miningTimer = 0f;
-                        goldMined += 10;
-                        // Hvis vi har nået eller overskredet kapaciteten, skift til ReturningToBase
-                        if (goldMined >= goldCapacity)
-                        {
-                            goldMined = goldCapacity;
-                            state = MinerState.ReturningToBase;
-                        }
-                    }
+                    goldCarried = goldCapacity;
+                    currentState = MinerState.Returning;
                     break;
-
-                case MinerState.ReturningToBase:
-                    MoveTowards(basePosition, elapsed);
-                    if (Vector2.Distance(Position, basePosition) < ArrivalThreshold)
+                case MinerState.Returning:
+                    Vector2 offset = new Vector2(75, 0);
+                    Vector2 modifiedTownHallPosition = townHallPosition + offset;
+                    MoveTowards(modifiedTownHallPosition, deltaTime);
+                    if (Vector2.Distance(Position, modifiedTownHallPosition) < 5f)
                     {
-                        // Aflever guldet – TownHall håndterer synkroniseringen internt
-                        townHall.DepositGold(goldMined);
-                        goldMined = 0;
-                        state = MinerState.MovingToMine;
+                        GoldDelivered?.Invoke(this, goldCarried);
+                        goldCarried = 0;
+                        currentState = MinerState.MovingToMine;
                     }
                     break;
             }
         }
 
-        /// <summary>
-        /// Hjælpefunktion til at flytte mineren mod en given position.
-        /// </summary>
-        /// <param name="target">Målposition</param>
-        /// <param name="elapsed">Forløbet tid siden sidste opdatering</param>
-        private void MoveTowards(Vector2 target, float elapsed)
+        private void MoveTowards(Vector2 target, float deltaTime)
         {
             Vector2 direction = target - Position;
             if (direction != Vector2.Zero)
             {
                 direction.Normalize();
-                // Opdaterer positionen baseret på bevægelseshastigheden og det forløbne tidsinterval.
-                Position += direction * MoveSpeed * elapsed;
+                Position += direction * speed * deltaTime;
             }
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, float layerDepth)
         {
-            // Hvis du vil skjule mineren under mining, kan du tilføje betingelser her.
-            if (Texture != null)
-            {
-                spriteBatch.Draw(Texture, Position, Color.White);
-            }
+            int animationRow = 1;
+
+            Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, animationRow * frameHeight, frameWidth, frameHeight);
+            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, layerDepth);
         }
     }
 }
