@@ -79,11 +79,11 @@ namespace DA_RTS.Classes.World
             blueMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Blue");
             redMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Red");
 
-            uiFont = Content.Load<SpriteFont>("Fonts/UIFont");
+            uiFont = Content.Load<SpriteFont>("Assets/Fonts/UIFont");
             goldIcon = Content.Load<Texture2D>("Assets/TinySwords/Resources/Resources/G_Idle");
             heartIcon = Content.Load<Texture2D>("Assets/UI/Health/Health001");
-            minerIcon = Content.Load<Texture2D>("Assets/TinySwords/Fations/Knights/Troops/Pawn/Pawn_Blue");
-            soldierIcon = Content.Load<Texture2D>("Assets/TinySwords/Fations/Knights/Troops/Warrior/Warrior_Blue");
+            minerIcon = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Blue");
+            soldierIcon = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Warrior/Warrior_Blue");
 
             buttonTexture = Content.Load<Texture2D>("Assets/TinySwords/UI/Buttons/Button_Blue");
             pressedButtonTexture = Content.Load<Texture2D>("Assets/TinySwords/UI/Buttons/Button_Blue_Pressed");
