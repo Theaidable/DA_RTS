@@ -61,7 +61,7 @@ namespace DA_RTS.Classes.UI
         {
             Texture2D textureToDraw = (IsPressed && PressedTexture != null) ? PressedTexture : Texture;
 
-            spriteBatch.Draw(textureToDraw, Position, null, Tint, 0f, Vector2.Zero, 2.1f, SpriteEffects.None, 0.1f);
+            spriteBatch.Draw(textureToDraw, Position, null, Tint, 0f, Vector2.Zero, 2.1f, SpriteEffects.None, 0.95f);
 
             if (Icon != null)
             {
@@ -71,14 +71,14 @@ namespace DA_RTS.Classes.UI
                 Vector2 iconOffset = new Vector2(10, 0);
                 iconPosition += iconOffset;
 
-                spriteBatch.Draw(Icon, iconPosition, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.00f);
+                spriteBatch.Draw(Icon, iconPosition, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.96f);
             }
 
             if (!string.IsNullOrEmpty(Text) && Font != null)
             {
                 Vector2 textSize = Font.MeasureString(Text);
                 Vector2 textPosition = Position + new Vector2((Texture.Width - textSize.X) / 2, (Texture.Height - textSize.Y) / 2);
-                spriteBatch.DrawString(Font, Text, textPosition, Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.00f);
+                spriteBatch.DrawString(Font, Text, textPosition, Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.97f);
             }
         }
     }

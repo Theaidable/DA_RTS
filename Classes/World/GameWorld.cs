@@ -46,8 +46,12 @@ namespace DA_RTS.Classes.World
 
         private int gold = 500;
         private int life = 100;
+        private int soldierSpawnIndex = 0;
+
+        private int enemyLife = 100;
 
         private List<Miner> miners;
+        private List<Soldier> soldiers;
 
         public GameWorld()
         {
@@ -112,6 +116,7 @@ namespace DA_RTS.Classes.World
             LoadMines();
 
             miners = new List<Miner>();
+            soldiers = new List<Soldier>();
         }
 
         public void LoadTileMap()
@@ -173,8 +178,24 @@ namespace DA_RTS.Classes.World
             if (gold >= 200)
             {
                 gold -= 200;
-                //Spawn logik for en soldier
+                // Juster spawn-position for at lave en række
+                Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width + 20, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
+                Soldier newSoldier = new Soldier(offset, soldierIcon, 100f, redTownHall.Position + new Vector2(-50, redCastleTexture.Height / 2));
+                newSoldier.DamageDealt += Soldier_DamageDealt;
+                soldiers.Add(newSoldier);
+
+                // Skift spawnIndex for at placere næste soldat lidt forskudt
+                soldierSpawnIndex = (soldierSpawnIndex + 1) % 5; // Maks 5 soldater i en række
             }
+        }
+
+        private void Soldier_DamageDealt(object sender, int damage)
+        {
+            enemyLife -= damage;            
+                if (enemyLife <= 0)
+                {
+                Console.WriteLine("Enemy Castle Destroyed");
+                }          
         }
 
         protected override void Update(GameTime gameTime)
@@ -200,6 +221,11 @@ namespace DA_RTS.Classes.World
                 miner.Update(gameTime);
             }
 
+            foreach (Soldier soldier in soldiers)
+            {
+                soldier.Update(gameTime);
+            }
+
             base.Update(gameTime);
         }
 
@@ -207,32 +233,37 @@ namespace DA_RTS.Classes.World
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
 
-            tileMap.Draw(_spriteBatch, 1.0f);
+            tileMap.Draw(_spriteBatch, 0.1f);
 
-            blueTownHall.Draw(_spriteBatch, 0.4f);
-            redTownHall.Draw(_spriteBatch, 0.4f);
+            blueTownHall.Draw(_spriteBatch, 0.5f);
+            redTownHall.Draw(_spriteBatch, 0.5f);
 
-            blueMine.Draw(_spriteBatch, 0.6f);
-            redMine.Draw(_spriteBatch, 0.6f);
+            blueMine.Draw(_spriteBatch, 0.3f);
+            redMine.Draw(_spriteBatch, 0.3f);
 
-            btnBuyMiner.Draw(_spriteBatch, 0.0f);
-            btnBuySoldier.Draw(_spriteBatch, 0.0f);
+            btnBuyMiner.Draw(_spriteBatch, 0.9f);
+            btnBuySoldier.Draw(_spriteBatch, 0.9f);
 
             Vector2 goldIconPosition = new Vector2(-25, 100);
             Vector2 heartIconPosition = new Vector2(20, 200);
-            _spriteBatch.Draw(goldIcon, goldIconPosition, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.0f);
-            _spriteBatch.Draw(heartIcon, heartIconPosition, null, Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.0f);
+            _spriteBatch.Draw(goldIcon, goldIconPosition, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.9f);
+            _spriteBatch.Draw(heartIcon, heartIconPosition, null, Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.9f);
 
             Vector2 goldTextPosition = goldIconPosition + new Vector2(100, 70);
             Vector2 lifeTextPosition = heartIconPosition + new Vector2(53, 15);
-            _spriteBatch.DrawString(uiFont, $"{gold}", goldTextPosition, Color.Yellow, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.0f);
-            _spriteBatch.DrawString(uiFont, $"{life}", lifeTextPosition, Color.Red, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.0f);
+            _spriteBatch.DrawString(uiFont, $"{gold}", goldTextPosition, Color.Yellow, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.9f);
+            _spriteBatch.DrawString(uiFont, $"{life}", lifeTextPosition, Color.Red, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.9f);
 
             foreach (Miner miner in miners)
             {
-                miner.Draw(_spriteBatch, 0.5f);
+                miner.Draw(_spriteBatch, 0.4f);
+            }
+
+            foreach (Soldier soldier in soldiers)
+            {
+                soldier.Draw(_spriteBatch, 0.7f);
             }
 
             _spriteBatch.End();
