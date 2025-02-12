@@ -70,23 +70,23 @@ namespace DA_RTS.Classes.World
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             previousKeyboardState = Keyboard.GetState();
 
-            tileTexture = Content.Load<Texture2D>("Assets/TileMap/Ground");
-            blueCastleTexture = Content.Load<Texture2D>("Assets/Buildings/Castle_Blue");
-            redCastleTexture = Content.Load<Texture2D>("Assets/Buildings/Castle_Red");
-            blueMineTexture = Content.Load<Texture2D>("Assets/Buildings/GoldMine_Inactive");
-            redMineTexture = Content.Load<Texture2D>("Assets/Buildings/GoldMine_Inactive");
+            tileTexture = Content.Load<Texture2D>("Assets/TinySwords/Terrain/Ground/Tilemap_Flat");
+            blueCastleTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Buildings/Castle/Castle_Blue");
+            redCastleTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Buildings/Castle/Castle_Red");
+            blueMineTexture = Content.Load<Texture2D>("Assets/TinySwords/Resources/Gold Mine/GoldMine_Inactive");
+            redMineTexture = Content.Load<Texture2D>("Assets/TinySwords/Resources/Gold Mine/GoldMine_Inactive");
 
-            blueMinerTexture = Content.Load<Texture2D>("Assets/CharacterSprites/Pawn_Blue");
-            redMinerTexture = Content.Load<Texture2D>("Assets/CharacterSprites/Pawn_Red");
+            blueMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Blue");
+            redMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Red");
 
             uiFont = Content.Load<SpriteFont>("Fonts/UIFont");
-            goldIcon = Content.Load<Texture2D>("Assets/Resources/Resources/G_Idle");
+            goldIcon = Content.Load<Texture2D>("Assets/TinySwords/Resources/Resources/G_Idle");
             heartIcon = Content.Load<Texture2D>("Assets/UI/Health/Health001");
-            minerIcon = Content.Load<Texture2D>("Assets/CharacterSprites/Pawn_Blue");
-            soldierIcon = Content.Load<Texture2D>("Assets/CharacterSprites/Warrior_Blue");
+            minerIcon = Content.Load<Texture2D>("Assets/TinySwords/Fations/Knights/Troops/Pawn/Pawn_Blue");
+            soldierIcon = Content.Load<Texture2D>("Assets/TinySwords/Fations/Knights/Troops/Warrior/Warrior_Blue");
 
-            buttonTexture = Content.Load<Texture2D>("Assets/UI/Buttons/Button_Blue");
-            pressedButtonTexture = Content.Load<Texture2D>("Assets/UI/Buttons/Button_Blue_Pressed");
+            buttonTexture = Content.Load<Texture2D>("Assets/TinySwords/UI/Buttons/Button_Blue");
+            pressedButtonTexture = Content.Load<Texture2D>("Assets/TinySwords/UI/Buttons/Button_Blue_Pressed");
 
             btnBuyMiner = new Button(buttonTexture, new Vector2(50, 10))
             {
