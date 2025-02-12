@@ -3,8 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
-
-namespace Test.Classes.UI
+namespace DA_RTS.Classes.UI
 {
     public class Button
     {

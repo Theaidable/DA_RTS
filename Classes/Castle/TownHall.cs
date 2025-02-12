@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Test.Classes.Castle
+namespace DA_RTS.Classes.Castle
 {
     public class TownHall
     {

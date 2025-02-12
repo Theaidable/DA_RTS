@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SharpDX.Direct3D9;
 using System;
 
-namespace Test.Classes.Units
+namespace DA_RTS.Classes.Units
 {
     public class Miner : Unit
     {

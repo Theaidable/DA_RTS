@@ -2,13 +2,13 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using Test.Classes.Castle;
-using Test.Classes.Mines;
-using Test.Classes.Units;
-using Test.Classes.UI;
+using DA_RTS.Classes.Castle;
+using DA_RTS.Classes.Mines;
+using DA_RTS.Classes.Units;
+using DA_RTS.Classes.UI;
 using System;
 
-namespace Test.Classes.World
+namespace DA_RTS.Classes.World
 {
     public class GameWorld : Game
     {

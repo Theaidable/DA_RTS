@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 
 
-namespace Test.Classes.Units
+namespace DA_RTS.Classes.Units
 {
     public abstract class Unit
     {

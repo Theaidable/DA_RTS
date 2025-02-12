@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Test.Classes.World
+namespace DA_RTS.Classes.World
 {
     public enum TileType
     {

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Test.Classes.Mines
+namespace DA_RTS.Classes.Mines
 {
     public class Mine
     {

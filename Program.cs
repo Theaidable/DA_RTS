@@ -1,3 +1,3 @@
 ﻿
-using var game = new DA_RTS.Classes.GameWorld();
+using var game = new DA_RTS.Classes.World.GameWorld();
 game.Run();
