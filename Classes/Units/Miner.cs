@@ -1,7 +1,5 @@
-﻿using DA_RTS.Classes.Units;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SharpDX.Direct3D9;
 using System;
 
 namespace DA_RTS.Classes.Units
@@ -25,6 +23,9 @@ namespace DA_RTS.Classes.Units
         private int goldCarried;
         private int goldCapacity;
 
+        private bool isVisable;
+        private float miningTimeElapsed = 0f;
+
         public event EventHandler<int> GoldDelivered;
 
         public Miner(Vector2 startPosition, Texture2D texture, float speed, Vector2 targetMine, Vector2 townHall) : base(startPosition, texture, speed)
@@ -47,10 +48,8 @@ namespace DA_RTS.Classes.Units
             frameHeight = texture.Height / totalRows;
         }
 
-        public override void Update(GameTime gameTime)
+        public override void UpdateLogic(float deltaTime)
         {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             elapsedTime += deltaTime;
             if (elapsedTime > timePerFrame)
             {
@@ -61,6 +60,7 @@ namespace DA_RTS.Classes.Units
             switch (currentState)
             {
                 case MinerState.MovingToMine:
+                    isVisable = true;
                     MoveTowards(targetMinePosition, deltaTime);
                     if (Vector2.Distance(Position, targetMinePosition) < 5f)
                     {
@@ -68,10 +68,18 @@ namespace DA_RTS.Classes.Units
                     }
                     break;
                 case MinerState.Mining:
-                    goldCarried = goldCapacity;
-                    currentState = MinerState.Returning;
+                    isVisable = false;
+                    miningTimeElapsed += deltaTime;
+
+                    if(miningTimeElapsed >= 5f)
+                    {
+                        goldCarried = goldCapacity;
+                        miningTimeElapsed = 0f;
+                        currentState = MinerState.Returning;
+                    }
                     break;
                 case MinerState.Returning:
+                    isVisable = true;
                     Vector2 offset = new Vector2(75, 0);
                     Vector2 modifiedTownHallPosition = townHallPosition + offset;
                     MoveTowards(modifiedTownHallPosition, deltaTime);
@@ -97,10 +105,19 @@ namespace DA_RTS.Classes.Units
 
         public override void Draw(SpriteBatch spriteBatch, float layerDepth)
         {
+            if(!isVisable) return;
+
             int animationRow = 1;
 
             Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, animationRow * frameHeight, frameWidth, frameHeight);
-            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, layerDepth);
+
+            SpriteEffects effects = SpriteEffects.None;
+            if(currentState == MinerState.Returning)
+            {
+                effects = SpriteEffects.FlipHorizontally;
+            }
+
+            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, effects, layerDepth);
         }
     }
 }
