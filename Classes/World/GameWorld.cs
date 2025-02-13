@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using DA_RTS.Classes.World.Environment;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
+using DA_RTS.Classes.AI;
 
 namespace DA_RTS.Classes.World
 {
@@ -39,6 +40,7 @@ namespace DA_RTS.Classes.World
 
         private Texture2D blueMinerTexture;
         private Texture2D redMinerTexture;
+        private Texture2D redSoldierTexture;
 
         private Button btnBuyMiner;
         private Button btnBuySoldier;
@@ -138,6 +140,9 @@ namespace DA_RTS.Classes.World
 
             btnBuyMiner.Click += OnBuyMiner_Click;
             btnBuySoldier.Click += OnBuySoldier_Click;
+
+            Enemy enemy = new Enemy(redTownHall, redMine, redMinerTexture, redSoldierTexture);
+
         }
 
         /// <summary>
@@ -152,6 +157,7 @@ namespace DA_RTS.Classes.World
             redMineTexture = Content.Load<Texture2D>("Assets/TinySwords/Resources/Gold Mine/GoldMine_Inactive");
             blueMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Blue");
             redMinerTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Pawn/Pawn_Red");
+            redSoldierTexture = Content.Load<Texture2D>("Assets/TinySwords/Factions/Knights/Troops/Warrior/Warrior_Red");
             uiFont = Content.Load<SpriteFont>("Assets/Fonts/UIFont");
             goldIcon = Content.Load<Texture2D>("Assets/TinySwords/Resources/Resources/G_Idle");
             heartIcon = Content.Load<Texture2D>("Assets/UI/Health/Health001");
