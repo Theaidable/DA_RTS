@@ -60,6 +60,8 @@ namespace DA_RTS.Classes.World
         private bool soldierThreadRunning = true;
         private readonly object soldierLock = new object();
 
+        private static readonly Mutex goldMutex = new Mutex();
+
         private List<Miner> miners;
         private List<Soldier> soldiers;
 
@@ -288,7 +290,15 @@ namespace DA_RTS.Classes.World
         /// </summary>
         private void Miner_GoldDelivered(object sender, int deliveredGold)
         {
-            gold += deliveredGold;
+            goldMutex.WaitOne();
+            try
+            {
+                gold += deliveredGold;
+            }
+            finally
+            {
+                goldMutex.ReleaseMutex();
+            }
         }
 
         /// <summary>
