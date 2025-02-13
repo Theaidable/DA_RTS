@@ -98,6 +98,10 @@ namespace DA_RTS.Classes.World
             minerUpdateThread.IsBackground = true;
             minerUpdateThread.Start();
 
+            soldierUpdateThread = new Thread(UpdateSoldierLogic);
+            soldierUpdateThread.IsBackground = true;
+            soldierUpdateThread.Start();
+
             base.Initialize();
         }
 
@@ -445,7 +449,7 @@ namespace DA_RTS.Classes.World
                         soldier.UpdateLogic(deltaTime);
                     }
                 }
-                //Thread.Sleep(25);
+                Thread.Sleep(16);
             }
         }
     }
