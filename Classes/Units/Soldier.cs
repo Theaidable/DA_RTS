@@ -36,10 +36,8 @@ namespace DA_RTS.Classes.Units
             frameHeight = texture.Height / 8; // Antal rækker i spritesheetet (fx idle, walk, attack)
         }
 
-        public override void Update(GameTime gameTime)
+        public override void UpdateLogic(float deltaTime)
         {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             // Animation update
             animationTimer += deltaTime;
             if (animationTimer >= timePerFrame)
@@ -82,7 +80,7 @@ namespace DA_RTS.Classes.Units
             int animationRow = reachedTarget ? 2 : 1; // F.eks. række 1 = gå, række 2 = angreb
 
             Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, animationRow * frameHeight, frameWidth, frameHeight);
-            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.7f);
+            spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.3f);
         }
     }
 }

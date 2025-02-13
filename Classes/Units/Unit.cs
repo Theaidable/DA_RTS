@@ -14,12 +14,12 @@ namespace DA_RTS.Classes.Units
 
         public Unit(Vector2 position, Texture2D texture, float speed)
         {
-            this.Position = position;
+            Position = position;
             this.texture = texture;
             this.speed = speed;
         }
 
-        public abstract void Update(GameTime gameTime);
+        public abstract void UpdateLogic(float deltaTime);
 
         public virtual void Draw(SpriteBatch spriteBatch, float layerDepth)
         {
