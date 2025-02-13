@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace DA_RTS.Classes.Units
 {
@@ -34,6 +36,7 @@ namespace DA_RTS.Classes.Units
 
         // Variabler til visning og mining-timer
         private bool isVisable; // Angiver om mineren skal vises (f.eks. ikke vises under mining)
+        private bool isWaiting; //angiver om mineren står venter på at kunne komme ind i minen
         private float miningTimeElapsed = 0f;
 
         /// <summary>
@@ -41,6 +44,9 @@ namespace DA_RTS.Classes.Units
         /// Parameteren angiver, hvor meget guld der blev afleveret.
         /// </summary>
         public event EventHandler<int> GoldDelivered;
+
+        // Begræns antal miners der kan være i mining-tilstanden samtidigt
+        private static SemaphoreSlim mineSemaphore = new SemaphoreSlim(3);
 
         /// <summary>
         /// Konstruerer en ny Miner med startposition, tekstur, hastighed, mål-mine og TownHall-position.
@@ -92,12 +98,26 @@ namespace DA_RTS.Classes.Units
             switch (currentState)
             {
                 case MinerState.MovingToMine:
+                    
                     // Miner skal være synlig, mens den bevæger sig mod minen
                     isVisable = true;
-                    MoveTowards(targetMinePosition, deltaTime);
-                    if (Vector2.Distance(Position, targetMinePosition) < 5f)
+                    
+                    if(Vector2.Distance(Position,targetMinePosition) >= 5f)
                     {
-                        currentState = MinerState.Mining;
+                        MoveTowards(targetMinePosition, deltaTime);
+                        isWaiting = false;
+                    }
+                    else
+                    {
+                        if (mineSemaphore.Wait(0))
+                        {
+                            currentState = MinerState.Mining;
+                            isWaiting = false;
+                        }
+                        else
+                        {
+                            isWaiting = true;
+                        }
                     }
                     break;
 
@@ -111,16 +131,21 @@ namespace DA_RTS.Classes.Units
                         goldCarried = goldCapacity;
                         miningTimeElapsed = 0f;
                         currentState = MinerState.Returning;
+
+                        // Frigiv permit, så en anden miner kan komme ind i minen
+                        mineSemaphore.Release();
                     }
                     break;
 
                 case MinerState.Returning:
                     // Gør mineren synlig igen, når den vender tilbage mod TownHall
                     isVisable = true;
+                    
                     // Tilføj et offset, så mineren ikke går direkte på TownHall, men lidt til højre
                     Vector2 offset = new Vector2(75, 0);
                     Vector2 modifiedTownHallPosition = townHallPosition + offset;
                     MoveTowards(modifiedTownHallPosition, deltaTime);
+                    
                     if (Vector2.Distance(Position, modifiedTownHallPosition) < 5f)
                     {
                         // Udløs eventet for aflevering af guld
@@ -156,14 +181,21 @@ namespace DA_RTS.Classes.Units
         public override void Draw(SpriteBatch spriteBatch, float layerDepth)
         {
             // Hvis mineren ikke skal vises (fx under mining), afslut tegningen
-            if (!isVisable) return;
+            if (!isVisable)
+            {
+                return;
+            }
 
             int animationRow = 1; // Vælg den række i spritesheetet, der repræsenterer gå-animationen
+            
+            if(currentState == MinerState.MovingToMine && isWaiting)
+            {
+                animationRow = 0;
+            }
+            
             Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, animationRow * frameHeight, frameWidth, frameHeight);
-
             // Hvis mineren er på vej tilbage, flip sprite vandret
             SpriteEffects effects = (currentState == MinerState.Returning) ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-
             spriteBatch.Draw(texture, Position, sourceRect, Color.White, 0f, Vector2.Zero, 1f, effects, layerDepth);
         }
     }
