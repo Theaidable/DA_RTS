@@ -13,6 +13,11 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace DA_RTS.Classes.World
 {
+    /// <summary>
+    /// Hovedklassen for spillet. Denne klasse initialiserer og håndterer alle spillets komponenter,
+    /// såsom tilemap, enheder (miners, soldiers), UI, miljøobjekter (træer, buske, sten, svampe) samt baggrundstråde
+    /// til opdatering af enheder.
+    /// </summary>
     public class GameWorld : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -47,15 +52,18 @@ namespace DA_RTS.Classes.World
 
         private SpriteFont uiFont;
 
+        // Baggrundstråde til opdatering af enheder
         private Thread minerUpdateThread;
         private bool minerThreadRunning = true;
         private readonly object minersLock = new object();
         private Thread soldierUpdateThread;
         private bool soldierThreadRunning = true;
         private readonly object soldierLock = new object();
+
         private List<Miner> miners;
         private List<Soldier> soldiers;
 
+        // Miljøobjekter
         private Texture2D smallBrushTexture;
         private Texture2D bigBrushTexture;
         private Texture2D smallRockTexture;
@@ -75,9 +83,11 @@ namespace DA_RTS.Classes.World
         private int gold = 500;
         private int life = 100;
         private int soldierSpawnIndex = 0;
-
         private int enemyLife = 100;
 
+        /// <summary>
+        /// Konstruerer et nyt GameWorld.
+        /// </summary>
         public GameWorld()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -85,15 +95,21 @@ namespace DA_RTS.Classes.World
             IsMouseVisible = true;
         }
 
+        /// <summary>
+        /// Initialiserer spillets indstillinger, herunder skærmopløsning og oprettelse af lister.
+        /// Starter baggrundstrådene til miner og soldater.
+        /// </summary>
         protected override void Initialize()
         {
             _graphics.PreferredBackBufferWidth = 1920;
             _graphics.PreferredBackBufferHeight = 1080;
             _graphics.ApplyChanges();
 
+            // Initialiser lister til enheder
             miners = new List<Miner>();
             soldiers = new List<Soldier>();
 
+            // Start baggrundstrådene til opdatering af enheder
             minerUpdateThread = new Thread(UpdateMinerLogic);
             minerUpdateThread.IsBackground = true;
             minerUpdateThread.Start();
@@ -105,6 +121,9 @@ namespace DA_RTS.Classes.World
             base.Initialize();
         }
 
+        /// <summary>
+        /// Indlæser alle teksturer, UI-elementer, miljøobjekter, og opretter tilemap, baser, miner, knapper osv.
+        /// </summary>
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -121,6 +140,9 @@ namespace DA_RTS.Classes.World
             btnBuySoldier.Click += OnBuySoldier_Click;
         }
 
+        /// <summary>
+        /// Indlæser alle nødvendige teksturer fra Content.
+        /// </summary>
         public void LoadTextures()
         {
             tileTexture = Content.Load<Texture2D>("Assets/TinySwords/Terrain/Ground/Tilemap_Flat");
@@ -146,6 +168,9 @@ namespace DA_RTS.Classes.World
             shroomTexture = Content.Load<Texture2D>("Assets/TinySwords/Deco/01");
         }
 
+        /// <summary>
+        /// Opretter knapperne til køb af enheder og tildeler relevante teksturer og event handlers.
+        /// </summary>
         public void LoadButtons()
         {
             btnBuyMiner = new Button(buttonTexture, new Vector2(50, 10))
@@ -165,6 +190,9 @@ namespace DA_RTS.Classes.World
             };
         }
 
+        /// <summary>
+        /// Opretter tilemap'et baseret på de angivne dimensioner og tile teksturen.
+        /// </summary>
         public void LoadTileMap()
         {
             int mapWidth = 40;
@@ -175,6 +203,9 @@ namespace DA_RTS.Classes.World
             tileMap = new TileMap(mapWidth, mapHeight, tileWidth, tileHeight, tileTexture);
         }
 
+        /// <summary>
+        /// Opretter baserne (TownHalls) for de to fraktioner.
+        /// </summary>
         public void LoadCastles()
         {
             int offsetX = 50;
@@ -188,6 +219,9 @@ namespace DA_RTS.Classes.World
             redTownHall = new TownHall(redPosition, redCastleTexture);
         }
 
+        /// <summary>
+        /// Opretter minerne (Mine-objekter) for de to fraktioner.
+        /// </summary>
         public void LoadMines()
         {
             int verticalOffset = 50;
@@ -201,6 +235,10 @@ namespace DA_RTS.Classes.World
             redMine = new Mine(redMinePosition, redMineTexture);
         }
 
+        /// <summary>
+        /// Opretter miljøobjekter som træer, buske, sten og svampe.
+        /// Her kan du hardcode placeringerne for at skabe et levende map.
+        /// </summary>
         public void LoadEnvironmentObjects()
         {
             trees = new List<Tree>();
@@ -211,17 +249,18 @@ namespace DA_RTS.Classes.World
             mediumRocks = new List<MediumRock>();
             bigRocks = new List<BigRock>();
 
-            //Her kan man indsætte objekter som følgende
-
-            //trees.Add(new Tree(new Vector2(x, y), treeTexture));
-            //bigBrushes.Add(new BigBrush(new Vector2(x, y), bigBrushTexture));
-            //smallBrushes.Add(new SmallBrush(new Vector2(x, y), smallBrushTexture));
-            //shrooms.Add(new Shroom(new Vector2(x, y), shroomTexture));
-            //smallRocks.Add(new SmallRock(new Vector2(x, y), smallRockTexture));
-            //mediumRocks.Add(new MediumRock(new Vector2(x, y), mediumRockTexture));
-            //bigRocks.Add(new BigRock(new Vector2(x, y), bigRockTexture));
+            // Du kan tilføje flere miljøobjekter (bigBrushes, smallBrushes, shrooms, smallRocks, mediumRocks, bigRocks) på samme måde:
+            // bigBrushes.Add(new BigBrush(new Vector2(x, y), bigBrushTexture));
+            // smallBrushes.Add(new SmallBrush(new Vector2(x, y), smallBrushTexture));
+            // shrooms.Add(new Shroom(new Vector2(x, y), shroomTexture));
+            // smallRocks.Add(new SmallRock(new Vector2(x, y), smallRockTexture));
+            // mediumRocks.Add(new MediumRock(new Vector2(x, y), mediumRockTexture));
+            // bigRocks.Add(new BigRock(new Vector2(x, y), bigRockTexture));
         }
 
+        /// <summary>
+        /// Håndterer klik på knappen for at købe en miner. Hvis der er nok guld, spawneres en miner.
+        /// </summary>
         private void OnBuyMiner_Click(object sender, EventArgs e)
         {
             if (gold >= 100)
@@ -230,27 +269,31 @@ namespace DA_RTS.Classes.World
             }
         }
 
+        /// <summary>
+        /// Håndterer klik på knappen for at købe en soldat. 
+        /// </summary>
         private void OnBuySoldier_Click(object sender, EventArgs e)
         {
             if (gold >= 200)
             {
-                gold -= 200;
-                // Juster spawn-position for at lave en række
-                Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width - 250, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
-                Soldier newSoldier = new Soldier(offset, soldierIcon, 100f, redTownHall.Position + new Vector2(-50, redCastleTexture.Height / 2));
-                newSoldier.DamageDealt += Soldier_DamageDealt;
-                soldiers.Add(newSoldier);
+                SpawnSoldier();
 
                 // Skift spawnIndex for at placere næste soldat lidt forskudt
                 soldierSpawnIndex = (soldierSpawnIndex + 1) % 5; // Maks 5 soldater i en række
             }
         }
 
+        /// <summary>
+        /// Event-handler for når en miner afleverer guld. Tilføjer det afleverede guld til spillerens total.
+        /// </summary>
         private void Miner_GoldDelivered(object sender, int deliveredGold)
         {
             gold += deliveredGold;
         }
 
+        /// <summary>
+        /// Event-handler for når en soldat forvolder skade på fjendens base.
+        /// </summary>
         private void Soldier_DamageDealt(object sender, int damage)
         {
             enemyLife -= damage;
@@ -260,6 +303,10 @@ namespace DA_RTS.Classes.World
             }
         }
 
+        /// <summary>
+        /// Hovedopdateringsmetoden for spillet. Opdaterer UI og behandler input.
+        /// Opdatering af enheder sker i baggrundstråde.
+        /// </summary>
         protected override void Update(GameTime gameTime)
         {
             btnBuyMiner.Update(gameTime);
@@ -269,19 +316,30 @@ namespace DA_RTS.Classes.World
             base.Update(gameTime);
         }
 
+        /// <summary>
+        /// Håndterer spillerinput, såsom tastetryk for at afslutte spillet og spawn af miners.
+        /// </summary>
         public void PlayerInput(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             KeyboardState keyboardState = Keyboard.GetState();
             if (keyboardState.IsKeyDown(Keys.M) && previousKeyboardState.IsKeyUp(Keys.M))
             {
                 SpawnMiner();
+            } 
+            else if(keyboardState.IsKeyDown(Keys.S) && previousKeyboardState.IsKeyUp(Keys.S))
+            {
+                SpawnSoldier();
             }
             previousKeyboardState = keyboardState;
         }
 
+        /// <summary>
+        /// Spawner en miner ved at reducere guld og tilføje en ny miner til listen.
+        /// </summary>
         public void SpawnMiner()
         {
             gold -= 100;
@@ -292,8 +350,22 @@ namespace DA_RTS.Classes.World
             miners.Add(newMiner);
         }
 
+        /// <summary>
+        /// Spawner en soldier ved at reducere guld og tilføje en ny sodlier til listen
+        /// </summary>
+        public void SpawnSoldier()
+        {
+            gold -= 200;
+            // Spawn logik for en soldier
+            Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width - 250, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
+            Soldier newSoldier = new Soldier(offset, soldierIcon, 100f, redTownHall.Position + new Vector2(-50, redCastleTexture.Height / 2));
+            newSoldier.DamageDealt += Soldier_DamageDealt;
+            soldiers.Add(newSoldier);
+        }
 
-
+        /// <summary>
+        /// Tegner alle spillets komponenter, herunder tilemap, miljøobjekter, baser, miner, soldater, UI mv.
+        /// </summary>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -329,11 +401,15 @@ namespace DA_RTS.Classes.World
                     soldier.Draw(_spriteBatch, 0.3f);
                 }
             }
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
         }
 
+        /// <summary>
+        /// Tegner UI-elementer såsom guld og liv.
+        /// </summary>
         public void DrawUI(GameTime gameTime)
         {
             Vector2 goldIconPosition = new Vector2(-25, 100);
@@ -347,7 +423,9 @@ namespace DA_RTS.Classes.World
             _spriteBatch.DrawString(uiFont, $"{life}", lifeTextPosition, Color.Red, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.0f);
         }
 
-
+        /// <summary>
+        /// Tegner alle miljøobjekter (træer, buske, sten, svampe) i spillets verden.
+        /// </summary>
         public void DrawEnvironment(GameTime gameTime)
         {
             if (trees != null)
@@ -407,6 +485,10 @@ namespace DA_RTS.Classes.World
             }
         }
 
+        /// <summary>
+        /// Stopper baggrundstrådene ved spillets lukning.
+        /// Sørger for, at alle opdateringstråde afsluttes pænt.
+        /// </summary>
         protected override void UnloadContent()
         {
             // Stop miner opdateringstråden
@@ -414,6 +496,7 @@ namespace DA_RTS.Classes.World
             if (minerUpdateThread != null && minerUpdateThread.IsAlive)
                 minerUpdateThread.Join();
 
+            // Stop soldier opdateringstråden
             soldierThreadRunning = false;
             if (soldierUpdateThread != null && soldierUpdateThread.IsAlive)
                 soldierUpdateThread.Join();
@@ -421,11 +504,15 @@ namespace DA_RTS.Classes.World
             base.UnloadContent();
         }
 
+        /// <summary>
+        /// Baggrundstrådens løkke, der opdaterer alle miners logik med en fast deltaTime.
+        /// Beskytter adgangen til miners-listen med et lock.
+        /// </summary>
         private void UpdateMinerLogic()
         {
             while (minerThreadRunning)
             {
-                float deltaTime = 0.035f;
+                float deltaTime = 0.035f; // cirka 35 ms pr. opdatering
                 lock (minersLock)
                 {
                     foreach (Miner miner in miners)
@@ -437,6 +524,10 @@ namespace DA_RTS.Classes.World
             }
         }
 
+        /// <summary>
+        /// Baggrundstrådens løkke, der opdaterer alle soldiers logik med en fast deltaTime.
+        /// Beskytter adgangen til soldiers-listen med et lock.
+        /// </summary>
         private void UpdateSoldierLogic()
         {
             while (soldierThreadRunning)
