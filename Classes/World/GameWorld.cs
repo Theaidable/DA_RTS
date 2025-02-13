@@ -50,7 +50,11 @@ namespace DA_RTS.Classes.World
         private Thread minerUpdateThread;
         private bool minerThreadRunning = true;
         private readonly object minersLock = new object();
+        private Thread soldierUpdateThread;
+        private bool soldierThreadRunning = true;
+        private readonly object soldierLock = new object();
         private List<Miner> miners;
+        private List<Soldier> soldiers;
 
         private Texture2D smallBrushTexture;
         private Texture2D bigBrushTexture;
@@ -70,6 +74,9 @@ namespace DA_RTS.Classes.World
 
         private int gold = 500;
         private int life = 100;
+        private int soldierSpawnIndex = 0;
+
+        private int enemyLife = 100;
 
         public GameWorld()
         {
@@ -85,6 +92,7 @@ namespace DA_RTS.Classes.World
             _graphics.ApplyChanges();
 
             miners = new List<Miner>();
+            soldiers = new List<Soldier>();
 
             minerUpdateThread = new Thread(UpdateMinerLogic);
             minerUpdateThread.IsBackground = true;
@@ -214,12 +222,7 @@ namespace DA_RTS.Classes.World
         {
             if (gold >= 100)
             {
-                gold -= 100;
-                Vector2 offset = new Vector2(100, -50);
-                Vector2 minerStartPosition = blueTownHall.Position + offset;
-                Miner newMiner = new Miner(minerStartPosition, blueMinerTexture, 100f, blueMine.GetPosition(), blueTownHall.Position);
-                newMiner.GoldDelivered += Miner_GoldDelivered;
-                miners.Add(newMiner);
+                SpawnMiner();
             }
         }
 
@@ -228,13 +231,29 @@ namespace DA_RTS.Classes.World
             if (gold >= 200)
             {
                 gold -= 200;
-                //Spawn logik for en soldier
+                // Juster spawn-position for at lave en række
+                Vector2 offset = new Vector2(blueTownHall.Position.X + blueCastleTexture.Width - 250, blueTownHall.Position.Y + (blueCastleTexture.Height / 2) + (soldierSpawnIndex * 50));
+                Soldier newSoldier = new Soldier(offset, soldierIcon, 100f, redTownHall.Position + new Vector2(-50, redCastleTexture.Height / 2));
+                newSoldier.DamageDealt += Soldier_DamageDealt;
+                soldiers.Add(newSoldier);
+
+                // Skift spawnIndex for at placere næste soldat lidt forskudt
+                soldierSpawnIndex = (soldierSpawnIndex + 1) % 5; // Maks 5 soldater i en række
             }
         }
 
         private void Miner_GoldDelivered(object sender, int deliveredGold)
         {
             gold += deliveredGold;
+        }
+
+        private void Soldier_DamageDealt(object sender, int damage)
+        {
+            enemyLife -= damage;
+            if (enemyLife <= 0)
+            {
+                Console.WriteLine("Enemy Castle Destroyed");
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -261,11 +280,15 @@ namespace DA_RTS.Classes.World
 
         public void SpawnMiner()
         {
-            Vector2 offset = new Vector2(100, -80);
+            gold -= 100;
+            Vector2 offset = new Vector2(100, -50);
             Vector2 minerStartPosition = blueTownHall.Position + offset;
             Miner newMiner = new Miner(minerStartPosition, blueMinerTexture, 100f, blueMine.GetPosition(), blueTownHall.Position);
+            newMiner.GoldDelivered += Miner_GoldDelivered;
             miners.Add(newMiner);
         }
+    
+        
 
         protected override void Draw(GameTime gameTime)
         {
@@ -295,6 +318,13 @@ namespace DA_RTS.Classes.World
                 }
             }
 
+            lock (soldierLock)
+            {
+                foreach (Soldier soldier in soldiers)
+                {
+                    soldier.Draw(_spriteBatch, 0.3f);
+                }
+            }
             _spriteBatch.End();
 
             base.Draw(gameTime);
@@ -380,6 +410,10 @@ namespace DA_RTS.Classes.World
             if (minerUpdateThread != null && minerUpdateThread.IsAlive)
                 minerUpdateThread.Join();
 
+            soldierThreadRunning = false;
+            if (soldierUpdateThread != null && soldierUpdateThread.IsAlive)
+                    soldierUpdateThread.Join();
+
             base.UnloadContent();
         }
 
@@ -396,6 +430,22 @@ namespace DA_RTS.Classes.World
                     }
                 }
                 Thread.Sleep(16);
+            }
+        }
+
+        private void UpdateSoldierLogic()
+        {
+            while (soldierThreadRunning)
+            {
+                float deltaTime = 0.035f;
+                lock (soldierLock)
+                {
+                    foreach (Soldier soldier in soldiers)
+                    {
+                        soldier.UpdateLogic(deltaTime);
+                    }
+                }
+                //Thread.Sleep(25);
             }
         }
     }
