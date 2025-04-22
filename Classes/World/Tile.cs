@@ -9,7 +9,9 @@ namespace DA_RTS.Classes.World
     /// </summary>
     public enum TileType
     {
-        Grass
+        Grass,
+        Wall,
+        Path
     }
 
     /// <summary>
@@ -70,8 +72,7 @@ namespace DA_RTS.Classes.World
                     // Denne rectangle udvælger en del af teksturet (her: x=20, y=20, bredde=150, højde=150) hvilket giver os græs
                     this.sourceRectangle = new Rectangle(20, 20, 150, 150);
                     break;
-                default:
-                    // Standard fallback
+                case TileType.Wall:
                     this.sourceRectangle = new Rectangle(20, 20, 150, 150);
                     break;
             }
